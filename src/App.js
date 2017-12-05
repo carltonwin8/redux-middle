@@ -4,6 +4,7 @@ import * as PostActions from './actions'
 import { applyMiddleware, combineReducers, createStore } from 'redux';
 import logger from 'redux-logger';
 import thunk from 'redux-thunk';
+import axios from 'axios';
 
 class App extends Component {
   state = {
@@ -76,23 +77,45 @@ class App extends Component {
   }
   middleware4 = applyMiddleware(thunk, logger);
   store4 = createStore(this.reducer4, 42, this.middleware4); // second parameter default state
+  /* async 2 */
+  initialState = { fetching: false, fetched: false, users: [], error: null }
+  reducer5 = (state=this.initialState, action) => {
+    switch(action.type) {
+      case "FETCH_USERS_START": return {...state, fetching: true};
+      case "FETCH_USERS_ERROR": return {...state, fetching: false, error: action.payload}
+      case "RECEIVED_USERS": return {...state, fetching: false, fetched: true, users: action.payload};
+      default: return state;
+    }
+  }
+  middleware5 = applyMiddleware(thunk, logger);
+  store5 = createStore(this.reducer5, this.middleware5); // second parameter middleware
   render() {
-    this.store.subscribe(() => console.log('store changed', this.store.getState()));
-    this.store.dispatch({type: "INC", payload: 1});
-    this.store.dispatch({type: "DEC", payload: 3});
+    // enable each section you want to see output from below
+    // this.store.subscribe(() => console.log('store changed', this.store.getState()));
+    // this.store.dispatch({type: "INC", payload: 1});
+    // this.store.dispatch({type: "DEC", payload: 3});
+    //
+    // this.store2.subscribe(() => console.log('store2 changed', this.store2.getState()));
+    // this.store2.dispatch({type: "CHANGE_NAME", payload: "Will"});
+    // this.store2.dispatch({type: "CHANGE_ID", payload: 333});
+    //
+    // this.store3.dispatch({type: "INC", payload: 1});
+    // this.store3.dispatch({type: "DEC", payload: 3});
+    // //this.store3.dispatch({type: "E"}); // commented to stop seeing the stack dump
+    //
+    // this.store4.dispatch(dispatch => { dispatch({type: "INC"}); });
+    // this.store4.dispatch({type: "DEC"});
 
-    this.store2.subscribe(() => console.log('store2 changed', this.store2.getState()));
-    this.store2.dispatch({type: "CHANGE_NAME", payload: "Will"});
-    this.store2.dispatch({type: "CHANGE_ID", payload: 333});
-
-    this.store3.dispatch({type: "INC", payload: 1});
-    this.store3.dispatch({type: "DEC", payload: 3});
-    //this.store3.dispatch({type: "E"}); // commented to stop seeing the stack dump
-
-    this.store4.dispatch(dispatch => {
-      dispatch({type: "INC"});
+    this.store5.dispatch(dispatch => {
+      dispatch({type: "FETCH_USERS_START"});
+      axios.get("http://rest.learncode.academy/api/wstern/users") // change url to test err
+        .then(resp => {
+          dispatch({type: "RECEIVED_USERS", payload: resp.data});
+        })
+        .catch(err => {
+          dispatch({type: "FETCH_USERS_ERROR", payload:err});
+        })
     });
-    this.store4.dispatch({type: "DEC"});
     return (
       <div>
         <header>
