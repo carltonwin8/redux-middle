@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import * as PostActions from './actions'
+import * as PostActions from './actions';
 import { applyMiddleware, combineReducers, createStore } from 'redux';
 import logger from 'redux-logger';
 import thunk from 'redux-thunk';
 import axios from 'axios';
+import promise from 'redux-promise-middleware';
 
 class App extends Component {
   state = {
@@ -89,6 +90,17 @@ class App extends Component {
   }
   middleware5 = applyMiddleware(thunk, logger);
   store5 = createStore(this.reducer5, this.middleware5); // second parameter middleware
+  /* async promise */
+  reducer6 = (state=this.initialState, action) => {
+    switch(action.type) {
+      case "FETCH_USERS_PENDING": return {...state, fetching: true};
+      case "FETCH_USERS_REJECTED": return {...state, fetching: false, error: action.payload}
+      case "FETCH_USERS_FULFILLED": return {...state, fetching: false, fetched: true, users: action.payload};
+      default: return state;
+    }
+  }
+  middleware6 = applyMiddleware(promise(), thunk, logger);
+  store6 = createStore(this.reducer6, this.middleware6); // second parameter middleware
   render() {
     // enable each section you want to see output from below
     // this.store.subscribe(() => console.log('store changed', this.store.getState()));
@@ -116,17 +128,21 @@ class App extends Component {
           dispatch({type: "FETCH_USERS_ERROR", payload:err});
         })
     });
+    this.store6.dispatch({type: "FETCH_USERS",
+      payload: axios.get("http://rest.learncode.academy/api/wstern/users")});
+
     return (
       <div>
         <header>
-          <h1>
-            <a href="https://medium.com/@meagle/understanding-87566abcfb7a">
-                Understanding Redux Middleware
-            </a>
-          </h1>
+          <h1>Redux Middleware</h1>
         </header>
         <p>
-          Open debugger/console to see output of examples above.
+          Open debugger/console to see output of examples covered &nbsp;
+            <a href="https://www.youtube.com/watch?v=ucd5x3Ka3gw">
+              here</a>
+            &nbsp;and&nbsp;
+            <a href="https://medium.com/@meagle/understanding-87566abcfb7a">
+              here</a>.
         </p>
         <ul>
           <li>compose {this.mark} => {this.compose(this.greet, this.emote)(this.mark)}</li>
