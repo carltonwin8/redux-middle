@@ -4,7 +4,7 @@ import * as PostActions from './actions';
 import { applyMiddleware, combineReducers, createStore } from 'redux';
 import logger from 'redux-logger';
 import thunk from 'redux-thunk';
-import axios from 'axios';
+//import axios from 'axios';
 import promise from 'redux-promise-middleware';
 
 class App extends Component {
@@ -101,6 +101,11 @@ class App extends Component {
   }
   middleware6 = applyMiddleware(promise(), thunk, logger);
   store6 = createStore(this.reducer6, this.middleware6); // second parameter middleware
+  /* react and redux together. above is redux by itself */
+  componentDidMount = () => {
+    this.props.addPost({item: 'hi'});
+    this.props.addPost({item: "hi2"});
+  }
   render() {
     // enable each section you want to see output from below
     // this.store.subscribe(() => console.log('store changed', this.store.getState()));
@@ -118,18 +123,18 @@ class App extends Component {
     // this.store4.dispatch(dispatch => { dispatch({type: "INC"}); });
     // this.store4.dispatch({type: "DEC"});
 
-    this.store5.dispatch(dispatch => {
-      dispatch({type: "FETCH_USERS_START"});
-      axios.get("http://rest.learncode.academy/api/wstern/users") // change url to test err
-        .then(resp => {
-          dispatch({type: "RECEIVED_USERS", payload: resp.data});
-        })
-        .catch(err => {
-          dispatch({type: "FETCH_USERS_ERROR", payload:err});
-        })
-    });
-    this.store6.dispatch({type: "FETCH_USERS",
-      payload: axios.get("http://rest.learncode.academy/api/wstern/users")});
+    // this.store5.dispatch(dispatch => {
+    //   dispatch({type: "FETCH_USERS_START"});
+    //   axios.get("http://rest.learncode.academy/api/wstern/users") // change url to test err
+    //     .then(resp => {
+    //       dispatch({type: "RECEIVED_USERS", payload: resp.data});
+    //     })
+    //     .catch(err => {
+    //       dispatch({type: "FETCH_USERS_ERROR", payload:err});
+    //     })
+    // });
+    // this.store6.dispatch({type: "FETCH_USERS",
+    //   payload: axios.get("http://rest.learncode.academy/api/wstern/users")});
 
     return (
       <div>
@@ -147,15 +152,15 @@ class App extends Component {
         <ul>
           <li>compose {this.mark} => {this.compose(this.greet, this.emote)(this.mark)}</li>
           <li>curryAdd {this.a} to {this.b} {this.c} => {this.addTen(this.b)} &amp; {this.addTen(this.c)}</li>
+        </ul>
 
+        <ul>
+          {this.props.state.map((item,index) => <li key={index}>{index} - {item}</li>)}
         </ul>
       </div>
     );
   }
 }
 
-const mapStateToProps = (state) => {
-  console.log(state);
-  return {...state};
-}
+const mapStateToProps = (state) => ({state});
 export default connect(mapStateToProps, PostActions)(App);
